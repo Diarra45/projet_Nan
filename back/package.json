@@ -1,0 +1,35 @@
+{
+  "name": "mongo",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/bun": "latest",
+    "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.10.1"
+  },
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "build": "bun build src/**/*.ts --outdir dist --minify",
+    "build:prod": "tsc -w",
+    "build:dev": "bun build src/index.ts --outdir dist --minify --watch",
+    "start:dev": "bun run --watch ./src/index.ts",
+    "start": "bun run dist/index.js"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@types/cors": "^2.8.19",
+    "axios": "^1.13.2",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.3",
+    "zod": "^4.1.12"
+  }
+}

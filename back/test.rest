@@ -1,0 +1,353 @@
+### Variables
+@baseUrl = http://localhost:3000
+@accessToken = 
+@refreshToken = 
+@userId = 
+@groupId = 
+@taskId = 
+
+### ==================== AUTHENTIFICATION ====================
+
+### 1. Inscription Utilisateur
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "testuser12345",
+  "email": "testuserS@example.com",
+  "password": "Password123"
+}
+
+### 2. Inscription Deuxième Utilisateur
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "testuser456",
+  "email": "testuser2@example.com",
+  "password": "Password456"
+}
+
+### 3. Connexion Utilisateur
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "Password123"
+}
+
+### 4. Connexion Invalide (Mauvais mot de passe)
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "WrongPassword"
+}
+
+### 5. Connexion Invalide (Email inexistant)
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "nonexistent@example.com",
+  "password": "Password123"
+}
+
+### ==================== PROFIL ====================
+
+### 6. Récupérer le Profil (Authentifié)
+GET {{baseUrl}}/profile
+Authorization: Bearer {{accessToken}}
+
+### 7. Accès au Profil sans Token
+GET {{baseUrl}}/profile
+
+### 8. Accès au Profil avec Token Invalide
+GET {{baseUrl}}/profile
+Authorization: Bearer invalid_token_here
+
+### ==================== REFRESH TOKEN ====================
+
+### 9. Rafraîchir le Token
+POST {{baseUrl}}/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### 10. Rafraîchir sans Refresh Token
+POST {{baseUrl}}/refresh-token
+Content-Type: application/json
+
+{
+}
+
+### ==================== GROUPES ====================
+
+### 11. Créer un Groupe
+POST {{baseUrl}}/group
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Projet Web",
+  "description": "Développement d'une application web moderne"
+}
+
+### 12. Créer Deuxième Groupe
+POST {{baseUrl}}/group
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Marketing Campaign",
+  "description": "Campagne marketing Q4 2024"
+}
+
+### 13. Lister les Groupes de l'Utilisateur
+GET {{baseUrl}}/groups
+Authorization: Bearer {{accessToken}}
+
+### 14. Récupérer un Groupe Spécifique
+GET {{baseUrl}}/group/{{groupId}}
+Authorization: Bearer {{accessToken}}
+
+### 15. Rejoindre un Groupe avec Code d'Invitation
+POST {{baseUrl}}/group/join
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "invitationCode": "ABC123XYZ"
+}
+
+### 16. Rejoindre un Groupe - Code Invalide
+POST {{baseUrl}}/group/join
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "invitationCode": "INVALID_CODE"
+}
+
+### ==================== TÂCHES ====================
+
+### 17. Créer une Tâche
+POST {{baseUrl}}/task
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Implémenter authentification",
+  "description": "Ajouter JWT et bcrypt",
+  "groupId": "{{groupId}}",
+  "deadline": "2024-12-31"
+}
+
+### 18. Créer Tâche Sans Description
+POST {{baseUrl}}/task
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Refactoriser le code",
+  "groupId": "{{groupId}}"
+}
+
+### 19. Créer Tâche - Groupe Invalide
+POST {{baseUrl}}/task
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Une tâche",
+  "groupId": "507f1f77bcf86cd799439011"
+}
+
+### 20. Récupérer une Tâche
+GET {{baseUrl}}/task/{{taskId}}
+Authorization: Bearer {{accessToken}}
+
+### 21. Lister les Tâches d'un Groupe
+GET {{baseUrl}}/group/{{groupId}}/tasks
+Authorization: Bearer {{accessToken}}
+
+### 22. Mettre à Jour une Tâche
+PUT {{baseUrl}}/task/{{taskId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Implémenter authentification JWT",
+  "description": "Ajouter JWT, bcrypt et refresh tokens",
+  "status": "in_progress",
+  "deadline": "2024-12-25"
+}
+
+### 23. Mettre à Jour le Statut d'une Tâche
+PUT {{baseUrl}}/task/{{taskId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "status": "completed"
+}
+
+### 24. Supprimer une Tâche
+DELETE {{baseUrl}}/task/{{taskId}}
+Authorization: Bearer {{accessToken}}
+
+### 25. Supprimer Tâche Non Autorisée (Pas le Propriétaire)
+DELETE {{baseUrl}}/task/{{taskId}}
+Authorization: Bearer {{accessToken}}
+
+### ==================== VALIDATION ====================
+
+### 26. Créer Utilisateur - Username Trop pendingt
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "ab",
+  "email": "test@example.com",
+  "password": "Password123"
+}
+
+### 27. Créer Utilisateur - Email Invalide
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "invalid-email",
+  "password": "Password123"
+}
+
+### 28. Créer Utilisateur - Mot de Passe Faible
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "weak"
+}
+
+### 29. Créer Utilisateur - Doublon Username
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "testuser123",
+  "email": "another@example.com",
+  "password": "Password123"
+}
+
+### 30. Créer Utilisateur - Doublon Email
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "differentuser",
+  "email": "testuser@example.com",
+  "password": "Password123"
+}
+
+### ==================== DÉCONNEXION ====================
+
+### 31. Se Déconnecter
+POST {{baseUrl}}/logout
+Authorization: Bearer {{accessToken}}
+
+### 32. Utiliser Token Révoqué Après Logout
+GET {{baseUrl}}/profile
+Authorization: Bearer {{accessToken}}
+
+### ==================== CAS D'ERREUR ====================
+
+### 33. Créer Groupe sans Authentification
+POST {{baseUrl}}/group
+Content-Type: application/json
+
+{
+  "name": "Non Autorisé"
+}
+
+### 34. Créer Tâche sans Authentification
+POST {{baseUrl}}/task
+Content-Type: application/json
+
+{
+  "title": "Non Autorisé",
+  "groupId": "{{groupId}}"
+}
+
+### 35. Accéder à un Groupe qu'on ne possède pas
+GET {{baseUrl}}/group/507f1f77bcf86cd799439012
+Authorization: Bearer {{accessToken}}
+
+### ==================== SCÉNARIO COMPLET ====================
+
+### Scénario: User1 crée groupe, User2 rejoint, crée tâche ensemble
+### Étape 1: User1 s'inscrit et se connecte
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "alice",
+  "email": "alice@example.com",
+  "password": "Alice123"
+}
+
+### Étape 2: Récupérer token de Alice et créer un groupe
+POST {{baseUrl}}/group
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Équipe Frontend",
+  "description": "Développement Frontend React"
+}
+
+### Étape 3: User2 s'inscrit
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "bob",
+  "email": "bob@example.com",
+  "password": "Bob123"
+}
+
+### Étape 4: Bob se connecte (changer token)
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "bob@example.com",
+  "password": "Bob123"
+}
+
+### Étape 5: Bob rejoint le groupe avec code invitation
+POST {{baseUrl}}/group/join
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "invitationCode": "ABC123XYZ"
+}
+
+### Étape 6: Alice crée une tâche (utiliser token Alice)
+POST {{baseUrl}}/task
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MjZkZDRkNTdkOGRlNzJkZDJmMGQ1NSIsImVtYWlsIjoidGVzdHVzZXJAZXhhbXBsZS5jb20iLCJ1c2VybmFtZSI6InRlc3R1c2VyMTIzIiwicm9sZSI6InVzZXIiLCJpYXQiOjE3NjQxNTQ3MDEsImV4cCI6MTc2NDE1NTYwMX0.cuWe5H7wy1USe_38Ex-58WiHQyO-e3RuK3IcS1T6oBA
+Content-Type: application/json
+
+{
+  "title": "Créer composant Header",
+  "description": "Composant réutilisable pour le header",
+  "groupId": "{{groupId}}",
+  "deadline": "2026-12-20"
+}
