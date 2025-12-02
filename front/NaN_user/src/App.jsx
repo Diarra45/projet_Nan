@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { 
   LogOut, Plus, Trash2, Edit2, Copy, Check, X, 
-  Users, Calendar, Search, Menu, Clock, User
+  Users, Calendar, Search, Menu, Clock, User,
+  UserPlus, UserMinus, Crown, Home, Briefcase,
+  Folder, ListTodo, Grid3x3
 } from "lucide-react";
 
-const API_BASE = "http://localhost:3000";
-
-// API Service simplifié et sécurisé
+const API_BASE = "https://projet-nan-backend.onrender.com";
+// API Service complet avec corrections
 const api = {
   register: async (data) => {
     try {
@@ -73,6 +74,45 @@ const api = {
     }
   },
 
+  getGroup: async (groupId, token) => {
+    try {
+      const response = await fetch(`${API_BASE}/group/${groupId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return await response.json();
+    } catch (error) {
+      throw new Error("Erreur de chargement du groupe");
+    }
+  },
+
+  updateGroup: async (groupId, data, token) => {
+    try {
+      const response = await fetch(`${API_BASE}/group/${groupId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+      return await response.json();
+    } catch (error) {
+      throw new Error("Erreur de mise à jour du groupe");
+    }
+  },
+
+  deleteGroup: async (groupId, token) => {
+    try {
+      const response = await fetch(`${API_BASE}/group/${groupId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return await response.json();
+    } catch (error) {
+      throw new Error("Erreur de suppression du groupe");
+    }
+  },
+
   joinGroup: async (code, token) => {
     try {
       const response = await fetch(`${API_BASE}/group/join`, {
@@ -86,6 +126,40 @@ const api = {
       return await response.json();
     } catch (error) {
       throw new Error("Erreur de jointure au groupe");
+    }
+  },
+
+  getGroupMembers: async (groupId, token) => {
+    try {
+      const response = await fetch(`${API_BASE}/group/${groupId}/members`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return await response.json();
+    } catch (error) {
+      throw new Error("Erreur de chargement des membres");
+    }
+  },
+
+  removeMemberFromGroup: async (groupId, memberId, token) => {
+    try {
+      console.log("Suppression du membre:", { groupId, memberId });
+      const response = await fetch(`${API_BASE}/group/${groupId}/member/${memberId}`, {
+        method: "DELETE",
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Erreur HTTP ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error("Erreur API removeMember:", error);
+      throw new Error(error.message || "Erreur lors de la suppression du membre");
     }
   },
 
@@ -116,6 +190,28 @@ const api = {
     }
   },
 
+  getPersonalTasks: async (token) => {
+    try {
+      const response = await fetch(`${API_BASE}/tasks/personal`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return await response.json();
+    } catch (error) {
+      throw new Error("Erreur de chargement des tâches personnelles");
+    }
+  },
+
+  getAllTasks: async (token) => {
+    try {
+      const response = await fetch(`${API_BASE}/tasks`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return await response.json();
+    } catch (error) {
+      throw new Error("Erreur de chargement de toutes les tâches");
+    }
+  },
+
   updateTask: async (taskId, data, token) => {
     try {
       const response = await fetch(`${API_BASE}/task/${taskId}`, {
@@ -143,11 +239,21 @@ const api = {
       throw new Error("Erreur de suppression de tâche");
     }
   },
+
+  getProfile: async (token) => {
+    try {
+      const response = await fetch(`${API_BASE}/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return await response.json();
+    } catch (error) {
+      throw new Error("Erreur de chargement du profil");
+    }
+  }
 };
 
-// Styles CSS responsive améliorés
+// Styles CSS complets avec corrections
 const styles = `
-/* Reset et Base */
 * {
   margin: 0;
   padding: 0;
@@ -164,7 +270,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Application Principale */
 .task-manager-app {
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -272,6 +377,49 @@ body {
   box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
 }
 
+/* Navigation Tabs */
+.nav-tabs {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 1rem;
+}
+
+.tabs-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+}
+
+.tab-btn {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #4a5568;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  background: #f7fafc;
+  color: #1a202c;
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
 /* Layout Principal */
 .main-container {
   width: 100%;
@@ -294,7 +442,7 @@ body {
   border: 1px solid rgba(226, 232, 240, 0.8);
   height: fit-content;
   position: sticky;
-  top: 100px;
+  top: 140px;
   flex-shrink: 0;
   transition: all 0.3s ease;
 }
@@ -368,6 +516,15 @@ body {
   border-color: #cbd5e0;
 }
 
+.btn-danger {
+  background: linear-gradient(135deg, #e53e3e 0%, #d53f8c 100%);
+  color: white;
+}
+
+.btn-danger:hover {
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+}
+
 /* Group List */
 .group-list {
   display: flex;
@@ -414,6 +571,16 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.group-owner-badge {
+  font-size: 0.7rem;
+  color: #38a169;
+  font-weight: 600;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .member-count {
@@ -484,7 +651,7 @@ body {
   flex-direction: column;
 }
 
-.group-header-section {
+.content-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -495,7 +662,12 @@ body {
   min-width: 0;
 }
 
-.group-title {
+.content-title-area {
+  min-width: 0;
+  flex: 1;
+}
+
+.content-title {
   font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: 700;
   color: #1a202c;
@@ -505,13 +677,19 @@ body {
   text-overflow: ellipsis;
 }
 
-.group-subtitle {
+.content-subtitle {
   color: #4a5568;
   margin-top: 0.25rem;
   font-size: clamp(0.875rem, 2vw, 1.125rem);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.content-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 /* Search and Filter */
@@ -670,6 +848,19 @@ body {
   border-color: #9ae6b4;
 }
 
+.task-group-badge {
+  padding: 0.25rem 0.5rem;
+  background: #edf2f7;
+  color: #4a5568;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 .task-description {
   color: #4a5568;
   font-size: 0.875rem;
@@ -769,6 +960,83 @@ body {
 .icon-btn.delete:hover {
   background: #feb2b2;
   color: #c53030;
+}
+
+/* Member List Styles */
+.member-list {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: #f7fafc;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.member-item:hover {
+  background: #edf2f7;
+  border-color: #cbd5e0;
+}
+
+.member-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.member-name {
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.member-email {
+  font-size: 0.75rem;
+  color: #718096;
+}
+
+.owner-badge {
+  font-size: 0.7rem;
+  color: #38a169;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(56, 161, 105, 0.1);
+  padding: 0.125rem 0.5rem;
+  border-radius: 1rem;
+}
+
+.remove-member-btn {
+  padding: 0.375rem 0.75rem;
+  background: #fed7d7;
+  color: #c53030;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.remove-member-btn:hover {
+  background: #feb2b2;
 }
 
 /* Empty States */
@@ -968,7 +1236,23 @@ body {
   padding-left: 3rem;
 }
 
-/* Style spécifique pour les inputs date désactivés */
+.form-select {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background: white;
+  cursor: pointer;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
 .form-input:disabled {
   background-color: #f7fafc;
   color: #a0aec0;
@@ -1195,7 +1479,7 @@ body {
   color: #5a67d8;
 }
 
-/* Media Queries Responsive */
+/* Responsive */
 @media (max-width: 1024px) {
   .main-container {
     gap: 1rem;
@@ -1204,6 +1488,7 @@ body {
   
   .sidebar {
     width: 280px;
+    top: 120px;
   }
   
   .task-grid {
@@ -1227,6 +1512,7 @@ body {
     width: 100%;
     position: static;
     margin-bottom: 0;
+    top: auto;
   }
   
   .sidebar.hidden {
@@ -1245,10 +1531,19 @@ body {
     display: none;
   }
   
-  .group-header-section {
+  .content-header {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
+  }
+  
+  .content-actions {
+    width: 100%;
+  }
+  
+  .content-actions .btn {
+    flex: 1;
+    min-width: 0;
   }
   
   .search-filter-content {
@@ -1368,36 +1663,24 @@ body {
   .login-card {
     padding: 1.5rem;
   }
-}
-
-@media (max-width: 360px) {
-  .header-content {
-    flex-wrap: wrap;
+  
+  .member-item {
+    flex-direction: column;
+    align-items: flex-start;
     gap: 0.5rem;
   }
   
-  .logo-section {
-    flex: 1 1 100%;
-    justify-content: center;
-    margin-bottom: 0.5rem;
+  .remove-member-btn {
+    align-self: flex-end;
   }
   
-  .user-info {
+  .tabs-container {
+    padding: 0.25rem 0;
+  }
+  
+  .tab-btn {
+    padding: 0.5rem 1rem;
     font-size: 0.75rem;
-  }
-  
-  .group-title {
-    font-size: 1.25rem;
-  }
-  
-  .status-badge {
-    font-size: 0.625rem;
-    padding: 0.375rem 0.75rem;
-  }
-  
-  .btn {
-    font-size: 0.75rem;
-    padding: 0.625rem;
   }
 }
 `;
@@ -1466,7 +1749,7 @@ function Login({ onLogin }) {
           <div className="login-icon">
             <Users />
           </div>
-          <h1 className="login-title">Gestion </h1>
+          <h1 className="login-title">Gestion de Tâches</h1>
           <p className="login-subtitle">
             {isSignUp ? "Créez votre compte" : "Connectez-vous à votre compte"}
           </p>
@@ -1549,7 +1832,7 @@ function Login({ onLogin }) {
   );
 }
 
-// Composants simplifiés pour éviter les erreurs
+// Composant Modal pour créer un groupe
 function GroupModal({ onClose, onCreate, token }) {
   const [form, setForm] = useState({ name: "", description: "" });
   const [loading, setLoading] = useState(false);
@@ -1627,12 +1910,17 @@ function GroupModal({ onClose, onCreate, token }) {
   );
 }
 
-function TaskModal({ group, onClose, onCreate, token }) {
-  const [form, setForm] = useState({ title: "", description: "", deadline: "" });
+// Composant Modal pour créer/modifier une tâche
+function TaskModal({ group, onClose, onCreate, token, groups = [], personalMode = false }) {
+  const [form, setForm] = useState({ 
+    title: "", 
+    description: "", 
+    deadline: "",
+    groupId: personalMode ? "" : (group?._id || "")
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Fonction pour obtenir la date du jour au format YYYY-MM-DD
   const getTodayDate = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -1648,11 +1936,10 @@ function TaskModal({ group, onClose, onCreate, token }) {
       return;
     }
 
-    // Validation de la date
     if (form.deadline) {
       const selectedDate = new Date(form.deadline);
       const today = new Date();
-      today.setHours(0, 0, 0, 0); // Réinitialiser l'heure pour comparer seulement les dates
+      today.setHours(0, 0, 0, 0);
 
       if (selectedDate < today) {
         setError("La date d'échéance ne peut pas être dans le passé");
@@ -1667,9 +1954,13 @@ function TaskModal({ group, onClose, onCreate, token }) {
       const taskData = {
         title: form.title.trim(),
         description: form.description.trim(),
-        groupId: group._id,
         deadline: form.deadline || null,
       };
+
+      // Si un groupe est sélectionné, l'ajouter
+      if (form.groupId) {
+        taskData.groupId = form.groupId;
+      }
 
       const res = await api.createTask(taskData, token);
       if (res.data) {
@@ -1686,7 +1977,7 @@ function TaskModal({ group, onClose, onCreate, token }) {
     <div className="modal-overlay">
       <div className="modal-content">
         <div className="modal-header">
-          <h2 className="modal-title">Nouvelle tâche</h2>
+          <h2 className="modal-title">{personalMode ? "Nouvelle tâche personnelle" : "Nouvelle tâche"}</h2>
           <button className="close-btn" onClick={onClose}>
             <X size={20} />
           </button>
@@ -1716,6 +2007,24 @@ function TaskModal({ group, onClose, onCreate, token }) {
             />
           </div>
 
+          {personalMode && groups.length > 0 && (
+            <div className="form-group">
+              <label className="form-label">Groupe (optionnel)</label>
+              <select
+                value={form.groupId}
+                onChange={(e) => setForm({ ...form, groupId: e.target.value })}
+                className="form-select"
+              >
+                <option value="">Tâche personnelle</option>
+                {groups.map((g) => (
+                  <option key={g._id} value={g._id}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="form-group">
             <label className="form-label">Date d'échéance</label>
             <div className="input-with-icon">
@@ -1725,7 +2034,7 @@ function TaskModal({ group, onClose, onCreate, token }) {
                 value={form.deadline}
                 onChange={(e) => setForm({ ...form, deadline: e.target.value })}
                 className="form-input"
-                min={getTodayDate()} // Empêche la sélection de dates passées
+                min={getTodayDate()}
               />
             </div>
             <p className="date-info">
@@ -1734,15 +2043,7 @@ function TaskModal({ group, onClose, onCreate, token }) {
           </div>
 
           {error && (
-            <div style={{ 
-              color: '#e53e3e', 
-              marginBottom: '1rem', 
-              fontSize: '0.875rem',
-              padding: '0.75rem',
-              backgroundColor: '#fed7d7',
-              border: '1px solid #feb2b2',
-              borderRadius: '0.5rem'
-            }}>
+            <div className="login-error">
               {error}
             </div>
           )}
@@ -1769,6 +2070,200 @@ function TaskModal({ group, onClose, onCreate, token }) {
   );
 }
 
+// Composant Modal pour gérer les membres
+function GroupMembersModal({ group, onClose, token, showNotification, currentUserId }) {
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadMembers = async () => {
+    setLoading(true);
+    try {
+      const res = await api.getGroupMembers(group._id, token);
+      if (res.data) {
+        setMembers(res.data);
+      }
+    } catch (err) {
+      setError(err.message || "Erreur de chargement");
+    }
+    setLoading(false);
+  };
+
+  const handleRemoveMember = async (memberId) => {
+    if (!window.confirm("Êtes-vous sûr de vouloir retirer ce membre du groupe ?")) {
+      return;
+    }
+
+    try {
+      const res = await api.removeMemberFromGroup(group._id, memberId, token);
+      if (res.message) {
+        showNotification("Membre retiré avec succès", "success");
+        // Recharger la liste des membres
+        await loadMembers();
+        // Si l'utilisateur actuel se retire lui-même, recharger la page
+        if (memberId === currentUserId) {
+          showNotification("Vous avez quitté le groupe", "info");
+          setTimeout(() => window.location.reload(), 1500);
+        }
+      }
+    } catch (err) {
+      showNotification(err.message || "Erreur lors de la suppression", "error");
+    }
+  };
+
+  useEffect(() => {
+    loadMembers();
+  }, []);
+
+  const isOwner = group.owner === currentUserId || group.owner?._id === currentUserId;
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h2 className="modal-title">Membres du groupe</h2>
+          <button className="close-btn" onClick={onClose}>
+            <X size={20} />
+          </button>
+        </div>
+
+        {error && (
+          <div className="login-error">
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <LoadingSpinner />
+        ) : (
+          <div className="member-list">
+            {members.length === 0 ? (
+              <div className="empty-state">
+                <Users className="empty-icon" size={48} />
+                <p className="empty-description">Aucun membre dans ce groupe</p>
+              </div>
+            ) : (
+              members.map((member) => (
+                <div key={member._id} className="member-item">
+                  <div className="member-info">
+                    <div className="member-name">
+                      {member.username}
+                      {(group.owner === member._id || group.owner?._id === member._id) && (
+                        <span className="owner-badge">
+                          <Crown size={12} /> Propriétaire
+                        </span>
+                      )}
+                    </div>
+                    <div className="member-email">{member.email}</div>
+                  </div>
+
+                  {isOwner && 
+                   member._id !== currentUserId && 
+                   (group.owner !== member._id && group.owner?._id !== member._id) && (
+                    <button
+                      onClick={() => handleRemoveMember(member._id)}
+                      className="remove-member-btn"
+                      title="Retirer du groupe"
+                    >
+                      <UserMinus size={14} /> Retirer
+                    </button>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        <div className="form-actions">
+          <button
+            onClick={onClose}
+            className="btn btn-secondary"
+            style={{ width: '100%' }}
+          >
+            Fermer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Composant Modal pour rejoindre un groupe
+function JoinGroupModal({ onClose, onJoin, token }) {
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      const res = await api.joinGroup(code, token);
+      if (res.data) {
+        onJoin();
+        onClose();
+      } else {
+        setError(res.message || "Erreur");
+      }
+    } catch (err) {
+      setError(err.message || "Erreur lors de la jointure");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h2 className="modal-title">Rejoindre un groupe</h2>
+          <button className="close-btn" onClick={onClose}>
+            <X size={20} />
+          </button>
+        </div>
+        
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">Code d'invitation</label>
+            <input
+              type="text"
+              placeholder="Entrez le code d'invitation"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              className="form-input"
+              required
+            />
+          </div>
+
+          {error && (
+            <div className="login-error">
+              {error}
+            </div>
+          )}
+
+          <div className="form-actions">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn btn-secondary"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn btn-primary"
+            >
+              {loading ? "Rejoindre..." : "Rejoindre"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// Composant pour afficher une tâche
 function TaskItem({ task, onUpdate, onDelete, token }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -1779,7 +2274,6 @@ function TaskItem({ task, onUpdate, onDelete, token }) {
   });
   const [editError, setEditError] = useState("");
 
-  // Fonction pour obtenir la date du jour au format YYYY-MM-DD
   const getTodayDate = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -1798,11 +2292,10 @@ function TaskItem({ task, onUpdate, onDelete, token }) {
   };
 
   const handleSave = async () => {
-    // Validation de la date
     if (editForm.deadline) {
       const selectedDate = new Date(editForm.deadline);
       const today = new Date();
-      today.setHours(0, 0, 0, 0); // Réinitialiser l'heure pour comparer seulement les dates
+      today.setHours(0, 0, 0, 0);
 
       if (selectedDate < today) {
         setEditError("La date d'échéance ne peut pas être dans le passé");
@@ -1851,9 +2344,7 @@ function TaskItem({ task, onUpdate, onDelete, token }) {
             />
             
             <div>
-              <label style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
-                Date d'échéance
-              </label>
+              <label className="form-label">Date d'échéance</label>
               <div className="input-with-icon">
                 <Calendar className="input-icon" size={20} />
                 <input
@@ -1870,14 +2361,7 @@ function TaskItem({ task, onUpdate, onDelete, token }) {
             </div>
 
             {editError && (
-              <div style={{ 
-                color: '#e53e3e', 
-                fontSize: '0.875rem',
-                padding: '0.5rem',
-                backgroundColor: '#fed7d7',
-                border: '1px solid #feb2b2',
-                borderRadius: '0.375rem'
-              }}>
+              <div className="login-error">
                 {editError}
               </div>
             )}
@@ -1886,7 +2370,7 @@ function TaskItem({ task, onUpdate, onDelete, token }) {
               <button
                 onClick={handleSave}
                 className="btn btn-primary"
-                style={{ padding: '0.5rem 1rem', flex: '1' }}
+                style={{ flex: '1' }}
               >
                 Enregistrer
               </button>
@@ -1896,7 +2380,7 @@ function TaskItem({ task, onUpdate, onDelete, token }) {
                   setEditError("");
                 }}
                 className="btn btn-secondary"
-                style={{ padding: '0.5rem 1rem', flex: '1' }}
+                style={{ flex: '1' }}
               >
                 Annuler
               </button>
@@ -1904,6 +2388,12 @@ function TaskItem({ task, onUpdate, onDelete, token }) {
           </div>
         ) : (
           <>
+            {task.groupId && (
+              <div className="task-group-badge">
+                <Briefcase size={12} /> {task.groupId?.name || "Groupe"}
+              </div>
+            )}
+            
             <div className="task-header">
               <h3 className="task-title">{task.title}</h3>
               <div className={`status-badge status-${task.status}`}>
@@ -1956,98 +2446,18 @@ function TaskItem({ task, onUpdate, onDelete, token }) {
   );
 }
 
-function JoinGroupModal({ onClose, onJoin, token }) {
-  const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
-      const res = await api.joinGroup(code, token);
-      if (res.data) {
-        onJoin();
-        onClose();
-      } else {
-        setError(res.message || "Erreur");
-      }
-    } catch (err) {
-      setError(err.message || "Erreur lors de la jointure");
-    }
-    setLoading(false);
-  };
-
-  return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h2 className="modal-title">Rejoindre un groupe</h2>
-          <button className="close-btn" onClick={onClose}>
-            <X size={20} />
-          </button>
-        </div>
-        
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label">Code d'invitation</label>
-            <input
-              type="text"
-              placeholder="Entrez le code d'invitation"
-              value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              className="form-input"
-              required
-            />
-          </div>
-
-          {error && (
-            <div style={{ 
-              color: '#e53e3e', 
-              marginBottom: '1rem', 
-              fontSize: '0.875rem',
-              padding: '0.75rem',
-              backgroundColor: '#fed7d7',
-              border: '1px solid #feb2b2',
-              borderRadius: '0.5rem'
-            }}>
-              {error}
-            </div>
-          )}
-
-          <div className="form-actions">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn btn-secondary"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn btn-primary"
-            >
-              {loading ? "Rejoindre..." : "Rejoindre"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-// Composant Principal avec gestion d'erreurs
+// Composant Principal
 export default function App() {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [groups, setGroups] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [tasks, setTasks] = useState([]);
+  const [activeTab, setActiveTab] = useState("all"); // "all", "personal", "group"
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showMembersModal, setShowMembersModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(null);
   const [notification, setNotification] = useState(null);
@@ -2065,6 +2475,7 @@ export default function App() {
     localStorage.setItem('token', tokens.accessToken);
     localStorage.setItem('user', JSON.stringify(userData));
     await loadGroups(tokens.accessToken);
+    await loadAllTasks(tokens.accessToken);
     showNotification("Connexion réussie !", "success");
   };
 
@@ -2077,11 +2488,52 @@ export default function App() {
     }
   };
 
-  const handleLogout = () => {
+  const loadAllTasks = async (tk) => {
+    try {
+      const res = await api.getAllTasks(tk);
+      if (res.data) setTasks(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Erreur chargement tâches:", err);
+    }
+  };
+
+  const loadGroupTasks = async (groupId) => {
+    setLoading(true);
+    try {
+      const res = await api.getGroupTasks(groupId, token);
+      if (res.data) {
+        setTasks(Array.isArray(res.data) ? res.data : []);
+      }
+    } catch (err) {
+      console.error("Erreur chargement tâches:", err);
+    }
+    setLoading(false);
+  };
+
+  const loadPersonalTasks = async () => {
+    setLoading(true);
+    try {
+      const res = await api.getPersonalTasks(token);
+      if (res.data) {
+        setTasks(Array.isArray(res.data) ? res.data : []);
+      }
+    } catch (err) {
+      console.error("Erreur chargement tâches personnelles:", err);
+    }
+    setLoading(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await api.logout(token);
+    } catch (err) {
+      console.error("Erreur logout:", err);
+    }
     setToken(null);
     setUser(null);
     setGroups([]);
     setTasks([]);
+    setSelectedGroup(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     showNotification("Déconnexion réussie", "info");
@@ -2089,22 +2541,22 @@ export default function App() {
 
   const handleSelectGroup = async (group) => {
     setSelectedGroup(group);
-    setLoading(true);
-    try {
-      const res = await api.getGroupTasks(group._id, token);
-      if (res.data) {
-        setTasks(Array.isArray(res.data) ? res.data : []);
-      } else {
-        setTasks([]);
-      }
-    } catch (err) {
-      console.error("Erreur chargement tâches:", err);
-      setTasks([]);
-    }
-    setLoading(false);
+    setActiveTab("group");
+    await loadGroupTasks(group._id);
     
     if (window.innerWidth <= 768) {
       setSidebarVisible(false);
+    }
+  };
+
+  const handleTabChange = async (tab) => {
+    setActiveTab(tab);
+    setSelectedGroup(null);
+    
+    if (tab === "all") {
+      await loadAllTasks(token);
+    } else if (tab === "personal") {
+      await loadPersonalTasks();
     }
   };
 
@@ -2128,10 +2580,28 @@ export default function App() {
   const handleCreateTask = async (task) => {
     setTasks([...tasks, task]);
     showNotification("Tâche créée !", "success");
+    
+    // Recharger les tâches selon l'onglet actif
+    if (activeTab === "all") {
+      await loadAllTasks(token);
+    } else if (activeTab === "personal") {
+      await loadPersonalTasks();
+    } else if (activeTab === "group" && selectedGroup) {
+      await loadGroupTasks(selectedGroup._id);
+    }
   };
 
-  const handleUpdateTask = (updated) => {
+  const handleUpdateTask = async (updated) => {
     setTasks(tasks.map((t) => (t._id === updated._id ? updated : t)));
+    
+    // Recharger les tâches selon l'onglet actif
+    if (activeTab === "all") {
+      await loadAllTasks(token);
+    } else if (activeTab === "personal") {
+      await loadPersonalTasks();
+    } else if (activeTab === "group" && selectedGroup) {
+      await loadGroupTasks(selectedGroup._id);
+    }
   };
 
   const handleDeleteTask = async (taskId) => {
@@ -2139,6 +2609,15 @@ export default function App() {
       await api.deleteTask(taskId, token);
       setTasks(tasks.filter((t) => t._id !== taskId));
       showNotification("Tâche supprimée !", "success");
+      
+      // Recharger les tâches selon l'onglet actif
+      if (activeTab === "all") {
+        await loadAllTasks(token);
+      } else if (activeTab === "personal") {
+        await loadPersonalTasks();
+      } else if (activeTab === "group" && selectedGroup) {
+        await loadGroupTasks(selectedGroup._id);
+      }
     } catch (err) {
       console.error("Erreur suppression tâche:", err);
     }
@@ -2148,10 +2627,17 @@ export default function App() {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesStatus = statusFilter === "all" || task.status === statusFilter;
+    
+    // Filtre supplémentaire selon l'onglet
+    if (activeTab === "personal") {
+      return matchesSearch && matchesStatus && !task.groupId;
+    } else if (activeTab === "group" && selectedGroup) {
+      return matchesSearch && matchesStatus && task.groupId === selectedGroup._id;
+    }
+    
     return matchesSearch && matchesStatus;
   });
 
-  // Récupération de la session au chargement
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
@@ -2160,10 +2646,10 @@ export default function App() {
       setToken(savedToken);
       setUser(JSON.parse(savedUser));
       loadGroups(savedToken);
+      loadAllTasks(savedToken);
     }
   }, []);
 
-  // Gestion responsive
   useEffect(() => {
     const handleResize = () => {
       setSidebarVisible(window.innerWidth > 768);
@@ -2196,7 +2682,7 @@ export default function App() {
               <Users size={24} />
             </div>
             <div style={{ minWidth: 0, flex: 1 }}>
-              <h1 className="app-title"> tache & groupe</h1>
+              <h1 className="app-title">Gestion de Tâches</h1>
               <p className="user-info">
                 <User size={14} />
                 {user?.username || user?.email}
@@ -2211,6 +2697,29 @@ export default function App() {
           </button>
         </div>
       </header>
+
+      <nav className="nav-tabs">
+        <div className="tabs-container">
+          <button
+            onClick={() => handleTabChange("all")}
+            className={`tab-btn ${activeTab === "all" ? 'active' : ''}`}
+          >
+            <Grid3x3 size={18} /> Toutes les tâches
+          </button>
+          <button
+            onClick={() => handleTabChange("personal")}
+            className={`tab-btn ${activeTab === "personal" ? 'active' : ''}`}
+          >
+            <Home size={18} /> Tâches personnelles
+          </button>
+          <button
+            onClick={() => handleTabChange("group")}
+            className={`tab-btn ${activeTab === "group" ? 'active' : ''}`}
+          >
+            <Briefcase size={18} /> Tâches de groupe
+          </button>
+        </div>
+      </nav>
 
       <div className="main-container">
         <aside className={`sidebar ${sidebarVisible ? '' : 'hidden'}`}>
@@ -2229,7 +2738,7 @@ export default function App() {
               onClick={() => setShowJoinModal(true)}
               className="btn btn-success"
             >
-              Rejoindre
+              <UserPlus size={18} /> Rejoindre
             </button>
           </div>
 
@@ -2238,13 +2747,20 @@ export default function App() {
               <div
                 key={group._id}
                 onClick={() => handleSelectGroup(group)}
-                className={`group-item ${selectedGroup?._id === group._id ? 'active' : ''}`}
+                className={`group-item ${selectedGroup?._id === group._id && activeTab === "group" ? 'active' : ''}`}
               >
                 <div className="group-header">
                   <h3 className="group-name">{group.name}</h3>
-                  <span className="member-count">
-                    {group.members?.length || 1} membre(s)
-                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <span className="member-count">
+                      {group.members?.length || 1} membre(s)
+                    </span>
+                    {group.owner?._id === user?.id && (
+                      <span className="group-owner-badge">
+                        <Crown size={12} /> Propriétaire
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <p className="group-description">
                   {group.description}
@@ -2273,105 +2789,117 @@ export default function App() {
         </aside>
 
         <main className="main-content">
-          {selectedGroup ? (
-            <div>
-              <div className="group-header-section">
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <h2 className="group-title">{selectedGroup.name}</h2>
-                  <p className="group-subtitle">{selectedGroup.description}</p>
-                </div>
+          <div className="content-header">
+            <div className="content-title-area">
+              <h2 className="content-title">
+                {activeTab === "all" ? "Toutes les tâches" : 
+                 activeTab === "personal" ? "Tâches personnelles" : 
+                 selectedGroup ? selectedGroup.name : "Tâches de groupe"}
+              </h2>
+              <p className="content-subtitle">
+                {activeTab === "all" ? "Vue complète de toutes vos tâches" : 
+                 activeTab === "personal" ? "Vos tâches personnelles" : 
+                 selectedGroup ? selectedGroup.description : "Sélectionnez un groupe"}
+              </p>
+            </div>
+            <div className="content-actions">
+              {activeTab === "group" && selectedGroup && (
+                <>
+                  <button
+                    onClick={() => setShowMembersModal(true)}
+                    className="btn btn-secondary"
+                  >
+                    <Users size={18} /> Membres
+                  </button>
+                  <button
+                    onClick={() => setShowTaskModal(true)}
+                    className="btn btn-primary"
+                  >
+                    <Plus size={18} /> Nouvelle tâche
+                  </button>
+                </>
+              )}
+              {(activeTab === "all" || activeTab === "personal") && (
                 <button
                   onClick={() => setShowTaskModal(true)}
                   className="btn btn-primary"
                 >
-                  <Plus size={20} /> Nouvelle tâche
+                  <Plus size={18} /> Nouvelle tâche
                 </button>
-              </div>
-
-              <div className="search-filter-container">
-                <div className="search-filter-content">
-                  <div className="search-input-container">
-                    <Search className="search-icon" size={20} />
-                    <input
-                      type="text"
-                      placeholder="Rechercher une tâche..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="search-input"
-                    />
-                  </div>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="filter-select"
-                  >
-                    <option value="all">Tous les statuts</option>
-                    <option value="pending">En attente</option>
-                    <option value="in_progress">En cours</option>
-                    <option value="completed">Terminé</option>
-                  </select>
-                </div>
-              </div>
-
-              {loading ? (
-                <LoadingSpinner />
-              ) : filteredTasks.length === 0 ? (
-                <div className="empty-state">
-                  <Users className="empty-icon" size={48} />
-                  <h3 className="empty-title">
-                    {searchTerm || statusFilter !== "all" 
-                      ? "Aucune tâche trouvée" 
-                      : "Aucune tâche"}
-                  </h3>
-                  <p className="empty-description">
-                    {searchTerm || statusFilter !== "all" 
-                      ? "Modifiez vos critères de recherche" 
-                      : "Créez votre première tâche"}
-                  </p>
-                  <div className="empty-actions">
-                    <button
-                      onClick={() => setShowTaskModal(true)}
-                      className="btn btn-primary"
-                    >
-                      Créer une tâche
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="task-grid">
-                  {filteredTasks.map((task) => (
-                    <TaskItem
-                      key={task._id}
-                      task={task}
-                      onUpdate={handleUpdateTask}
-                      onDelete={handleDeleteTask}
-                      token={token}
-                    />
-                  ))}
-                </div>
               )}
             </div>
-          ) : (
+          </div>
+
+          <div className="search-filter-container">
+            <div className="search-filter-content">
+              <div className="search-input-container">
+                <Search className="search-icon" size={20} />
+                <input
+                  type="text"
+                  placeholder="Rechercher une tâche..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+              </div>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="filter-select"
+              >
+                <option value="all">Tous les statuts</option>
+                <option value="pending">En attente</option>
+                <option value="in_progress">En cours</option>
+                <option value="completed">Terminé</option>
+              </select>
+            </div>
+          </div>
+
+          {loading ? (
+            <LoadingSpinner />
+          ) : filteredTasks.length === 0 ? (
             <div className="empty-state">
-              <Users className="empty-icon" size={48} />
-              <h3 className="empty-title">Bienvenue sur la gestion des taches </h3>
+              <ListTodo className="empty-icon" size={48} />
+              <h3 className="empty-title">
+                {searchTerm || statusFilter !== "all" 
+                  ? "Aucune tâche trouvée" 
+                  : "Aucune tâche"}
+              </h3>
               <p className="empty-description">
-                Sélectionnez ou créez un groupe pour commencer
+                {searchTerm || statusFilter !== "all" 
+                  ? "Modifiez vos critères de recherche" 
+                  : activeTab === "group" && !selectedGroup
+                    ? "Sélectionnez un groupe pour voir ses tâches"
+                    : "Créez votre première tâche"}
               </p>
               <div className="empty-actions">
                 <button
-                  onClick={() => setShowGroupModal(true)}
+                  onClick={() => setShowTaskModal(true)}
                   className="btn btn-primary"
                 >
-                  Créer un groupe
+                  <Plus size={18} /> Créer une tâche
                 </button>
-                <button
-                  onClick={() => setShowJoinModal(true)}
-                  className="btn btn-success"
-                >
-                  Rejoindre un groupe
-                </button>
+                {activeTab === "group" && !selectedGroup && (
+                  <button
+                    onClick={() => setShowGroupModal(true)}
+                    className="btn btn-success"
+                  >
+                    <Users size={18} /> Créer un groupe
+                  </button>
+                )}
               </div>
+            </div>
+          ) : (
+            <div className="task-grid">
+              {filteredTasks.map((task) => (
+                <TaskItem
+                  key={task._id}
+                  task={task}
+                  onUpdate={handleUpdateTask}
+                  onDelete={handleDeleteTask}
+                  token={token}
+                />
+              ))}
             </div>
           )}
         </main>
@@ -2384,6 +2912,7 @@ export default function App() {
           token={token}
         />
       )}
+      
       {showJoinModal && (
         <JoinGroupModal
           onClose={() => setShowJoinModal(false)}
@@ -2391,12 +2920,25 @@ export default function App() {
           token={token}
         />
       )}
-      {selectedGroup && showTaskModal && (
+      
+      {showTaskModal && (
         <TaskModal
           group={selectedGroup}
           onClose={() => setShowTaskModal(false)}
           onCreate={handleCreateTask}
           token={token}
+          groups={groups}
+          personalMode={activeTab === "personal"}
+        />
+      )}
+      
+      {selectedGroup && showMembersModal && (
+        <GroupMembersModal
+          group={selectedGroup}
+          onClose={() => setShowMembersModal(false)}
+          token={token}
+          showNotification={showNotification}
+          currentUserId={user?.id}
         />
       )}
 
@@ -2410,4 +2952,3 @@ export default function App() {
     </div>
   );
 }
-
